@@ -208,21 +208,22 @@
             'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
 
         /**
-         * Add the map to the page
+         * Add the map to the page,
+         * Center at Seattle
          */
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/light-v10',
-            center: [-77.034084142948, 38.909671288923],
-            zoom: 13,
+            center: [-122.322, 47.6426], 
+            zoom: 10.2,
             scrollZoom: false
         });
 
         async function geojsonFetch() {
 
-            let response, stores;
-            response = await fetch('assets/stores.json');
-            stores = await response.json()
+            let response, basemap;
+            response = await fetch('assets/city_limit.geojson');
+            basemap = await response.json()
 
             /**
              * Assign a unique id to each store. You'll use this `id`
@@ -237,13 +238,20 @@
              * Wait until the map loads to make changes to the map.
              */
             map.on('load', () => {
-                /**
-                 * This is where your '.addLayer()' used to be, instead
-                 * add only the source without styling a layer
-                 */
-                map.addSource('places', {
-                    'type': 'geojson',
-                    'data': stores
+                // adding Seattle City Boundary Map
+                map.addSource('city_limits', {
+                    type: 'geojson',
+                    data: basemap
+                });
+
+                map.addLayer({
+                    'id': 'sea-layer',
+                    'type': 'fill',
+                    'source': 'city-limits',
+                    'paint': {
+                        'fill-color': 'blue',
+                        'fill-opacity': 0.1
+                    }
                 });
 
                 /**
