@@ -16,11 +16,11 @@ The main two audiences that inspire the creation of this project are
 
 The general public should have easy access to know the crimes happening within their areas of interest. We feel that our interface will benefit them to see where crime is committed and if law enforcement is close enough to minimize it. 
 
-### MAP
+## MAP
 
-<img src="assets/ " width=800>
+[<img src="assets/screenshot.png" width=900>](https://tj717.github.io/495_Seattle-Criminal-Records-and-Police-Stations-Map/)
 
-### Main Functions
+## Main Functions
 Our data makes use of one main function: geojsonFetch(). This function contains the meat of our functionality and makes use of smaller functions within. This function starts out with loading our external files using fetch. After that we load our layers on to the map. From there, we start by building a Geocoder to help assist us with controlling the search fucntions. From here on out, functions will be listed in the order they appear in our code.
 
 buildLocationList(stations):
@@ -44,21 +44,21 @@ flyTo(currentFeature):
 
 
 
-### Data Resouces
+## Data Resouces
 - [Seattle Boundaries Data](https://github.com/seattleio/seattle-boundaries-data/blob/master/data/city-limits.geojson)
 - [Seattle Crime Data](https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5)
 - [Police Station Locations](https://gis-kingcounty.opendata.arcgis.com/datasets/kingcounty::police-station-locations-in-king-county-kcp-loc-point/about)
 
-### Applied Libraries & Web Services in Use
+## Applied Libraries & Web Services in Use
 - Github
 - Mapbox GL JS
 - Seattle Open Data
 - Seattle City GIS
 - King County GIS Open Data
 
-### Acknowledgment
+## Acknowledgment
 This project is accomplished over the course of the Geography Department at UW. 
 
-### Note
+## Note
 Due to the limitations on the size of the dataset allowed in order to have a fast and smooth render on the map, we chose to shrink our dataset to 1.6 megabytes, which means a large portion of criminal records data is not included and rendered on our map. From the original dataset, we filtered out: crime records before June 2022, crimes against properties, crimes against society, and crime reports that ended up not being a crime. We chose crime against a person as our only category of crime (this is different from offense categories) because we thought people are more concerned about crime against individuals (which includes human trafficking, assault offense, homicide, etc.). This type of crime needs more immediate attention from the police officers, which means the response time from police stations to the crime location will be short if the crime scene is close to a police station and long if it's far away from any police station.
 
