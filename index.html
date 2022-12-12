@@ -31,12 +31,13 @@
 
         .sidebar {
             position: absolute;
-            width: 33.3333%;
+            width: 25%;
             height: 100%;
             top: 0;
             left: 0;
             overflow: hidden;
             border-right: 1px solid rgba(0, 0, 0, 0.25);
+            color: rgb(103, 103, 103);
         }
 
         .pad2 {
@@ -45,8 +46,8 @@
 
         .map {
             position: absolute;
-            left: 33.3333%;
-            width: 66.6666%;
+            left: 25%;
+            width: 75%;
             top: 0;
             bottom: 0;
         }
@@ -74,14 +75,16 @@
             min-height: 60px;
             line-height: 60px;
             padding: 0 10px;
-            background-color: #00853e;
+            background-color: #353535;
             color: #fff;
         }
 
         .listings {
             height: 100%;
+            width: 110%;
             overflow: auto;
             padding-bottom: 60px;
+            background-color: #202020;
         }
 
         .listings .item {
@@ -96,7 +99,7 @@
 
         .listings .item .title {
             display: block;
-            color: #00853e;
+            color: white;
             font-weight: 700;
         }
 
@@ -106,11 +109,12 @@
 
         .listings .item.active .title,
         .listings .item .title:hover {
-            color: #8cc63f;
+            color:red;
         }
 
         .listings .item.active {
-            background-color: #f8f8f8;
+
+            background-color: #ffffff;
         }
 
         ::-webkit-scrollbar {
@@ -125,15 +129,15 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #00853e;
+            background: #202020;
             border-radius: 0;
         }
 
         .marker {
             border: none;
             cursor: pointer;
-            height: 56px;
-            width: 56px;
+            height: 24px;
+            width: 24px;
             background-image: url(img/marker.png);
         }
 
@@ -153,7 +157,7 @@
         }
 
         .mapboxgl-popup-content h3 {
-            background: #91c949;
+            background:#353535;
             color: #fff;
             margin: -15px 0 0;
             padding: 10px;
@@ -176,7 +180,7 @@
         }
 
         .mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
-            border-bottom-color: #91c949;
+            border-bottom-color: #151515;
         }
 
         .mapboxgl-ctrl-geocoder {
@@ -198,7 +202,7 @@
 <body>
     <div class="sidebar">
         <div class="heading">
-            <h1>Our locations</h1>
+            <h1>Police Stations</h1>
         </div>
         <div id="listings" class="listings"></div>
     </div>
@@ -214,36 +218,47 @@
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/dark-v10',
-            center: [-122.322, 47.6426], 
+            center: [-122.322, 47.6226], 
             zoom: 10.2,
-            scrollZoom: false
+            minZoom: 10,
+            scrollZoom: true
         });
 
         async function geojsonFetch() {
 
-            let response, basemap;
+            let response, response2, response3, basemap, stations, crimeRecords;
             response = await fetch('assets/city_limit.geojson');
-            basemap = await response.json()
+            response2 = await fetch('assets/stations.geojson');
+            response3 = await fetch('assets/crime_records.geojson');
+
+            basemap = await response.json();
+            stations = await response2.json();
+            crimeRecords = await response3.json();
 
             /**
-             * Assign a unique id to each store. You'll use this `id`
+             * Assign a unique id to each station. You'll use this `id`
              * later to associate each point on the map with a listing
              * in the sidebar.
-             */
-            // stores.features.forEach((store, i) => {
-            //     store.properties.id = i;
-            // });
+            */
+             
+            stations.features.forEach((station, i) => {
+                station.properties.id = i;
+            });
 
             /**
              * Wait until the map loads to make changes to the map.
              */
             map.on('load', () => {
-
-
-                // adding Seattle City Boundary Map
+                
+            // adding Seattle City Boundary Map
             map.addSource('seattle', {
                 type: 'geojson',
                 data: basemap
+            });
+            
+            map.addSource('crimeRecords', {
+                type: 'geojson',
+                data: crimeRecords
             });
 
             map.addLayer({
@@ -252,9 +267,23 @@
                 'source': 'seattle',
                 'paint': {
                     'fill-color': '#0080ff', // blue color fill
-                    'fill-opacity': 0.5
+                    'fill-opacity': 0.35
                 }
             });
+
+            // Crime-records layer
+            map.addLayer({
+                'id': 'crimeRecords',
+                'type': 'symbol',
+                'source': 'crimeRecords',
+                'layout': {
+                    'icon-image': 'marker-15',
+                    'icon-size': 0.75,
+                    'icon-allow-overlap': true
+                }
+            });
+
+
 
 
                 /**
@@ -263,8 +292,7 @@
                 const geocoder = new MapboxGeocoder({
                     accessToken: mapboxgl.accessToken,
                     mapboxgl: mapboxgl,
-                    marker: true,
-                    bbox: [-77.210763, 38.803367, -76.853675, 39.052643]
+                    marker: true
                 });
 
                 /**
@@ -273,18 +301,18 @@
                  * - The search box (MapboxGeocoder) onto the map
                  * - The markers onto the map
                  */
-                buildLocationList(stores);
+                buildLocationList(stations);
                 map.addControl(geocoder, 'top-right');
                 addMarkers();
 
                 /**
                  * Listen for when a geocoder result is returned. When one is returned:
                  * - Calculate distances
-                 * - Sort stores by distance
+                 * - Sort stations by distance
                  * - Rebuild the listings
                  * - Adjust the map camera
-                 * - Open a popup for the closest store
-                 * - Highlight the listing for the closest store.
+                 * - Open a popup for the closest station
+                 * - Highlight the listing for the closest station.
                  */
                 geocoder.on('result', (event) => {
                     /* Get the coordinate of the search result */
@@ -292,26 +320,26 @@
 
                     /**
                      * Calculate distances:
-                     * For each store, use turf.disance to calculate the distance
-                     * in miles between the searchResult and the store. Assign the
+                     * For each station, use turf.disance to calculate the distance
+                     * in miles between the searchResult and the station. Assign the
                      * calculated value to a property called `distance`.
                      */
                     const options = {
                         units: 'miles'
                     };
-                    for (const store of stores.features) {
-                        store.properties.distance = turf.distance(
+                    for (const station of stations.features) {
+                        station.properties.distance = turf.distance(
                             searchResult,
-                            store.geometry,
+                            station.geometry,
                             options
                         );
                     }
 
                     /**
-                     * Sort stores by distance from closest to the `searchResult`
+                     * Sort stations by distance from closest to the `searchResult`
                      * to furthest.
                      */
-                    stores.features.sort((a, b) => {
+                    stations.features.sort((a, b) => {
                         if (a.properties.distance > b.properties.distance) {
                             return 1;
                         }
@@ -324,29 +352,29 @@
                     /**
                      * Rebuild the listings:
                      * Remove the existing listings and build the location
-                     * list again using the newly sorted stores.
+                     * list again using the newly sorted stations.
                      */
                     const listings = document.getElementById('listings');
                     while (listings.firstChild) {
                         listings.removeChild(listings.firstChild);
                     }
-                    buildLocationList(stores);
+                    buildLocationList(stations);
 
-                    /* Open a popup for the closest store. */
-                    createPopUp(stores.features[0]);
+                    /* Open a popup for the closest station. */
+                    createPopUp(stations.features[0]);
 
-                    /** Highlight the listing for the closest store. */
+                    /** Highlight the listing for the closest station. */
                     const activeListing = document.getElementById(
-                        `listing-${stores.features[0].properties.id}`
+                        `listing-${stations.features[0].properties.id}`
                     );
                     activeListing.classList.add('active');
 
                     /**
                      * Adjust the map camera:
                      * Get a bbox that contains both the geocoder result and
-                     * the closest store. Fit the bounds to that bbox.
+                     * the closest station. Fit the bounds to that bbox.
                      */
-                    const bbox = getBbox(stores, 0, searchResult);
+                    const bbox = getBbox(stations, 0, searchResult);
                     map.fitBounds(bbox, {
                         padding: 100
                     });
@@ -356,16 +384,16 @@
             /**
              * Using the coordinates (lng, lat) for
              * (1) the search result and
-             * (2) the closest store
+             * (2) the closest station
              * construct a bbox that will contain both points
              */
-            function getBbox(sortedStores, storeIdentifier, searchResult) {
+            function getBbox(sortedStations, stationIdentifier, searchResult) {
                 const lats = [
-                    sortedStores.features[storeIdentifier].geometry.coordinates[1],
+                    sortedStations.features[stationIdentifier].geometry.coordinates[1],
                     searchResult.coordinates[1]
                 ];
                 const lons = [
-                    sortedStores.features[storeIdentifier].geometry.coordinates[0],
+                    sortedStations.features[stationIdentifier].geometry.coordinates[0],
                     searchResult.coordinates[0]
                 ];
                 const sortedLons = lons.sort((a, b) => {
@@ -393,11 +421,11 @@
             }
 
             /**
-             * Add a marker to the map for every store listing.
+             * Add a marker to the map for every station listing.
              **/
             function addMarkers() {
                 /* For each feature in the GeoJSON object above: */
-                for (const marker of stores.features) {
+                for (const marker of stations.features) {
                     /* Create a div element for the marker. */
                     const el = document.createElement('div');
                     /* Assign a unique `id` to the marker. */
@@ -418,11 +446,11 @@
                     /**
                      * Listen to the element and when it is clicked, do three things:
                      * 1. Fly to the point
-                     * 2. Close all other popups and display popup for clicked store
+                     * 2. Close all other popups and display popup for clicked station
                      * 3. Highlight listing in sidebar (and remove highlight for all other listings)
                      **/
                     el.addEventListener('click', (e) => {
-                        flyToStore(marker);
+                        flyTo(marker);
                         createPopUp(marker);
                         const activeItem = document.getElementsByClassName('active');
                         e.stopPropagation();
@@ -438,15 +466,15 @@
             }
 
             /**
-             * Add a listing for each store to the sidebar.
+             * Add a listing for each point to the sidebar.
              **/
-            function buildLocationList(stores) {
-                for (const store of stores.features) {
+            function buildLocationList(stations) {
+                for (const station of stations.features) {
                     /* Add a new listing section to the sidebar. */
                     const listings = document.getElementById('listings');
                     const listing = listings.appendChild(document.createElement('div'));
                     /* Assign a unique `id` to the listing. */
-                    listing.id = `listing-${store.properties.id}`;
+                    listing.id = `listing-${station.properties.id}`;
                     /* Assign the `item` class to each listing for styling. */
                     listing.className = 'item';
 
@@ -454,32 +482,32 @@
                     const link = listing.appendChild(document.createElement('a'));
                     link.href = '#';
                     link.className = 'title';
-                    link.id = `link-${store.properties.id}`;
-                    link.innerHTML = `${store.properties.address}`;
+                    link.id = `link-${station.properties.id}`;
+                    link.innerHTML = `${station.properties.NAME}`;
 
                     /* Add details to the individual listing. */
                     const details = listing.appendChild(document.createElement('div'));
-                    details.innerHTML = `${store.properties.city}`;
-                    if (store.properties.phone) {
-                        details.innerHTML += ` &middot; ${store.properties.phoneFormatted}`;
+                    details.innerHTML = `${station.properties.PHONE}`;
+                    if (station.properties.PHONE) {
+                        details.innerHTML += ` &middot; ${station.properties.ADDRESS}`;
                     }
-                    if (store.properties.distance) {
+                    if (station.properties.distance) {
                         const roundedDistance =
-                            Math.round(store.properties.distance * 100) / 100;
+                            Math.round(station.properties.distance * 100) / 100;
                         details.innerHTML += `<div><strong>${roundedDistance} miles away</strong></div>`;
                     }
 
                     /**
                      * Listen to the element and when it is clicked, do four things:
-                     * 1. Update the `currentFeature` to the store associated with the clicked link
+                     * 1. Update the `currentFeature` to the station associated with the clicked link
                      * 2. Fly to the point
-                     * 3. Close all other popups and display popup for clicked store
+                     * 3. Close all other popups and display popup for clicked station
                      * 4. Highlight listing in sidebar (and remove highlight for all other listings)
                      **/
                     link.addEventListener('click', function () {
-                        for (const feature of stores.features) {
+                        for (const feature of stations.features) {
                             if (this.id === `link-${feature.properties.id}`) {
-                                flyToStore(feature);
+                                flyTo(feature);
                                 createPopUp(feature);
                             }
                         }
@@ -496,7 +524,7 @@
              * Use Mapbox GL JS's `flyTo` to move the camera smoothly
              * a given center point.
              **/
-            function flyToStore(currentFeature) {
+            function flyTo(currentFeature) {
                 map.flyTo({
                     center: currentFeature.geometry.coordinates,
                     zoom: 15
@@ -515,12 +543,14 @@
                     })
                     .setLngLat(currentFeature.geometry.coordinates)
                     .setHTML(
-                        `<h3>Sweetgreen</h3><h4>${currentFeature.properties.address}</h4>`
+                        `<h3>${currentFeature.properties.NAME}</h3><h4>${currentFeature.properties.ADDRESS} <br/> ${currentFeature.properties.PHONE} <br/>
+                        <a href="${currentFeature.properties.WEBSITE}">Go to Website</a></h4>`
                     )
                     .addTo(map);
             }
         }
         geojsonFetch();
+
     </script>
 </body>
 
