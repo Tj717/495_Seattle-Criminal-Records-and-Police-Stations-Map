@@ -8,6 +8,7 @@ To incorporate our topic of sorting by distance, we aim to achieve distance to s
 - See crime density in the area
 - See law enforcement locations in the area
 - See the correlation between the above 2
+
 Essentially, the user will be able to search for a location of interest, such as a location with high crime data, and they will be able to see the closest police stations in the sidebar from closest station to furthest.
 
 The main two audiences that inspire the creation of this project are
