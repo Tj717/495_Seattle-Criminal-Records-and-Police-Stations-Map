@@ -214,6 +214,7 @@
             font-size: 15px;
             text-align: center;
             color: #ffffff;
+            margin-top: 10px;
         }
 
         #menu a {
@@ -244,6 +245,23 @@
         #menu a.active:hover {
             background: #3074a4;
         }
+
+        .mapboxgl-ctrl-group button {
+            width: 40px;
+            height: 40px;
+            background-color: #483aff;
+        }
+
+        .mapboxgl-user-location-dot:after {
+            background-color: greenyellow;
+        }
+
+        .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading:after, .mapboxgl-user-location-show-heading .mapboxgl-user-location-heading:before {
+            content: "";
+            border-bottom: 7.5px solid #00ff6e;
+            position: absolute;
+        }
+
     </style>
 </head>
 
@@ -297,11 +315,13 @@
             map.addControl(
                 new mapboxgl.GeolocateControl({
                     positionOptions: { enableHighAccuracy: false },
+                    fitBoundsOptions: { maxzoom: 10},
                     // When active the map will receive updates to the device's location as it changes.
                     trackUserLocation: true,
                     // Draw an arrow next to the location dot to indicate which direction the device is heading.
-                    showUserHeading: true
-                })
+                    showUserHeading: true,
+                    showAccuracyCircle: false
+                }), 'bottom-right'
             );
 
             /**
