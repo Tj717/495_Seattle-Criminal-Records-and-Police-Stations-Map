@@ -278,6 +278,10 @@
         mapboxgl.accessToken =
             'pk.eyJ1IjoiZmF0bW9vc2UiLCJhIjoiY2t1eWY0ZXRoMmhiMzJ3bzZnczcyMXZ1NyJ9._RrkxwKkDAlgErLRDaVcEA';
 
+            const bounds = [
+                [-122.76879535373996,47.21094334466014], // Southwest coordinates
+                [-121.9126306463983,47.8436021466498] // Northeast coordinates
+                ];
         /**
          * Add the map to the page,
          * Center at Seattle
@@ -288,7 +292,8 @@
             center: [-122.322, 47.6226], 
             zoom: 10.2,
             minZoom: 10,
-            scrollZoom: true
+            scrollZoom: true,
+            maxBounds: bounds
         });
 
         async function geojsonFetch() {
